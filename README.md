@@ -1,54 +1,87 @@
-| Supported Targets | ESP32 | ESP32-C3 | ESP32-C6 | ESP32-H2 | ESP32-S2 | ESP32-S3 |
-| ----------------- | ----- | -------- | -------- | -------- | -------- | -------- |
 
-# Sigma Delta Modulation LED Example
+# แนวทางการทำงาน Sigma Delta Modulation LED Example
+การทดลองนี้เป็นการควบคุมการกระพริบของ LED โดยใช้การสื่อสารผ่าน Sigma-Delta Modulation บน ESP32 โค้ดนี้ใช้ FreeRTOS เพื่อจัดการกับการทำงานของ task ที่ทำให้ LED มีความสว่างและมืดอย่างต่อเนื่อง 
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+## การเลือก Example IDF
 
-This example uses the sigma-delta driver to generate modulated output on a GPIO. If you connect a LED or LCD backlight control to the output GPIO, you will see it slowly brightening and dimming.
+![สกรีนช็อต 2024-10-29 235340](https://github.com/user-attachments/assets/70ce3f84-77ad-48bb-9f3f-557cd7ec98de)
 
-## How to use example
+1. เลือก ESP-IDF
 
-### Hardware Required
+2. เลือก show example
 
-* A development board with any supported Espressif SoC (e.g., ESP32-DevKitC, ESP-WROVER-KIT, etc.)
-* A USB cable for Power supply and programming
-* An LED and a resistor to limit the LED current. Connect them as below:
+3. พิมพ์คำว่า Sdm
+
+4. เลือก sdm_led
+
+
+![สกรีนช็อต 2024-10-29 235134](https://github.com/user-attachments/assets/d94cd89b-36fe-42d3-83d5-4f22928c1389)
+
+  
+5. คลิกเลือก Create project using example sdm_led
+
+
+6. เมื่อสร้างแล้วจะได้ไฟล์ทั้งหมดดังนี้
+
+![สกรีนช็อต 2024-10-29 235153](https://github.com/user-attachments/assets/3a5ea28a-29da-4df8-9803-a28f7694ce20)
+
+## การต่อ GPIO กับ LED 
+
+7. เลือกไฟล์ main.c
+
+### ในโค้ดมีการกำหนดการต่อ GPIO ดังนี้
+
+- EXAMPLE_SIGMA_DELTA_GPIO_NUM คือ หมายเลข GPIO ที่ใช้เชื่อมต่อกับ LED
+  
+- EXAMPLE_LED_DIM_PERIOD_MS คือ ตัวแปรที่กำหนดค่าเวลาที่ LED จะมีการกระพริบ
+  
+- EXAMPLE_LED_DIM_DELAY_MS คือ ความช้าในการเปลี่ยนแปลงความสว่าง
+  
+- EXAMPLE_LED_DIM_DUTY_STEP คือ จำนวนที่เพิ่มหรือลดความสว่าง
+  
+- EXAMPLE_LED_DIM_DUTY_MAX คือ ค่าสูงสุดของ duty cycle
+  
+- EXAMPLE_LED_DIM_DUTY_MIN คือ ค่าต่ำสุดของ duty cycle
+
+![image](https://github.com/user-attachments/assets/d220dc83-131d-42e7-9f72-b7275542c60b)
+
+## Build and Flash
+
+8. เลือก com port
+
+9. เลือก Build Flash and Monitor
+
+## ผลลัพท์
+
+- Serial Moniter แสดง สถานะของ LED
 
 ```
-                                   330R            LED
-EXAMPLE_SIGMA_DELTA_GPIO_NUM +----/\/\/\----+------|>|-----+ GND
-```
-
-### Configure the project
-
-You can change the GPIO number by [EXAMPLE_SIGMA_DELTA_GPIO_NUM](main/sdm_led_example_main.c).
-
-### Build and Flash
-
-Build the project and flash it to the board, then run the monitor tool to view the serial output:
-
-Run `idf.py -p PORT flash monitor` to build, flash and monitor the project.
-
-(To exit the serial monitor, type ``Ctrl-]``.)
-
-See the [Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html) for full steps to configure and use ESP-IDF to build projects.
-
-## Example Output
-
-Once the upload is complete and the board is reset, the program should start running. This is reported on the monitor as below:
-
-```
-...
 I (245) cpu_start: Starting scheduler.
 I (249) example: Install sigma delta channel
-I (249) gpio: GPIO[0]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0
+I (249) gpio: GPIO[14]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0
 I (259) example: Enable sigma delta channel
 I (259) example: Change duty cycle continuously
 ```
 
-Immediately after that the LED should start brightening and dimming.
+## การแก้ไข
 
-## Troubleshooting
+![สกรีนช็อต 2024-10-30 000409](https://github.com/user-attachments/assets/4bcb986d-55bc-4f93-af74-c9fd064057be)
 
-For any technical queries, please open an [issue](https://github.com/espressif/esp-idf/issues) on GitHub. We will get back to you soon.
+สามารถปรับค่าได้ตามความต้องการ ดังนี้
+
+- EXAMPLE_LED_DIM_PERIOD_MS : เปลี่ยนค่าเวลาที่ LED จะมีการกระพริบ
+เช่น ถ้าต้องการให้ LED กระพริบเร็วขึ้น สามารถลดค่าลงได้
+- EXAMPLE_LED_DIM_DELAY_MS : เปลี่ยนระยะเวลาที่ LED จะอยู่ในแต่ละสถานะ (เปิด/ปิด)
+เช่น การลดค่าให้เร็วขึ้นจะทำให้ LED กระพริบเร็วขึ้น
+- EXAMPLE_LED_DIM_DUTY_STEP : ปรับค่าของการเปลี่ยนแปลงความสว่างในแต่ละรอบ ถ้าต้องการให้ความสว่างเพิ่มขึ้นหรือลดลงอย่างช้า ๆ ก็สามารถลดค่าได้
+- EXAMPLE_LED_DIM_DUTY_MAX และ EXAMPLE_LED_DIM_DUTY_MIN : ปรับค่าความสว่างสูงสุดและต่ำสุดของ LED เพื่อให้มีการเปลี่ยนแปลงในช่วงที่ต้องการ
+  
+### ตัวอย่าง
+
+```
+#define EXAMPLE_LED_DIM_PERIOD_MS    500  // ลดเวลาสำหรับ LED กระพริบเร็วขึ้น
+#define EXAMPLE_LED_DIM_DELAY_MS     5    // ทำให้ LED เปลี่ยนสถานะเร็วขึ้น
+#define EXAMPLE_LED_DIM_DUTY_STEP    5    // เปลี่ยนค่าความสว่างในแต่ละรอบให้มากขึ้น
+```
+
+### ผลลัพท์การแก้ไข
