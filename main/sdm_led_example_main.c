@@ -9,7 +9,7 @@
 #include "esp_log.h"
 #include "driver/sdm.h"
 
-#define EXAMPLE_SIGMA_DELTA_GPIO_NUM 0
+#define EXAMPLE_SIGMA_DELTA_GPIO_NUM 14
 #define EXAMPLE_LED_DIM_PERIOD_MS    1000
 #define EXAMPLE_LED_DIM_DELAY_MS     10
 #define EXAMPLE_LED_DIM_DUTY_STEP    2
