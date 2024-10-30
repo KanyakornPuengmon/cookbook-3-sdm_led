@@ -43,7 +43,9 @@
   
 - EXAMPLE_LED_DIM_DUTY_MIN คือ ค่าต่ำสุดของ duty cycle
 
-![image](https://github.com/user-attachments/assets/d220dc83-131d-42e7-9f72-b7275542c60b)
+
+![image](https://github.com/user-attachments/assets/0248118a-c44f-4d9c-8c7d-a5c55e4c6307)
+
 
 ## Build and Flash
 
@@ -55,17 +57,23 @@
 
 - Serial Moniter แสดง สถานะของ LED
 
+![image](https://github.com/user-attachments/assets/ba383e53-ee35-4d3d-816c-aedaaca80a7b)
+
 ```
-I (245) cpu_start: Starting scheduler.
+I (245) cpu_start: Start on CPU0
 I (249) example: Install sigma delta channel
-I (249) gpio: GPIO[14]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0
+I (249) gpio: GPIO[18]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0
 I (259) example: Enable sigma delta channel
 I (259) example: Change duty cycle continuously
 ```
 
+https://drive.google.com/file/d/1TztgrTv5GsYkEvPEka7i63QPSzl4_Lnp/view
+
+
 ## การแก้ไข
 
-![สกรีนช็อต 2024-10-30 000409](https://github.com/user-attachments/assets/4bcb986d-55bc-4f93-af74-c9fd064057be)
+![image](https://github.com/user-attachments/assets/b83eecd6-85a0-41c8-a390-c7ef15626b59)
+
 
 สามารถปรับค่าได้ตามความต้องการ ดังนี้
 
@@ -79,9 +87,65 @@ I (259) example: Change duty cycle continuously
 ### ตัวอย่าง
 
 ```
-#define EXAMPLE_LED_DIM_PERIOD_MS    500  // ลดเวลาสำหรับ LED กระพริบเร็วขึ้น
-#define EXAMPLE_LED_DIM_DELAY_MS     5    // ทำให้ LED เปลี่ยนสถานะเร็วขึ้น
-#define EXAMPLE_LED_DIM_DUTY_STEP    5    // เปลี่ยนค่าความสว่างในแต่ละรอบให้มากขึ้น
+#define EXAMPLE_LED_DIM_PERIOD_MS    800  // ลดเวลาสำหรับ LED กระพริบเร็วขึ้น
+#define EXAMPLE_LED_DIM_DELAY_MS     10    // ทำให้ LED เปลี่ยนสถานะเร็วขึ้น
+#define EXAMPLE_LED_DIM_DUTY_STEP    2    // เปลี่ยนค่าความสว่างในแต่ละรอบให้มากขึ้น
 ```
 
-### ผลลัพท์การแก้ไข
+## ผลลัพท์การแก้ไข
+
+- LED กระพริบเร็วขึ้น
+
+https://drive.google.com/file/d/161-8x1vni2QJvoyo4KNkm9XjXJEJGDsy/edit
+
+## ตัวอย่างโค้ดที่แก้ไข
+
+```
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
+#include "driver/sdm.h"
+
+#define EXAMPLE_SIGMA_DELTA_GPIO_NUM  18
+#define EXAMPLE_LED_DIM_PERIOD_MS    800
+#define EXAMPLE_LED_DIM_DELAY_MS     10
+#define EXAMPLE_LED_DIM_DUTY_STEP    2 
+#define EXAMPLE_LED_DIM_DUTY_MAX     90
+#define EXAMPLE_LED_DIM_DUTY_MIN     (EXAMPLE_LED_DIM_DUTY_MAX - EXAMPLE_LED_DIM_PERIOD_MS / EXAMPLE_LED_DIM_DELAY_MS * EXAMPLE_LED_DIM_DUTY_STEP)
+
+static const char TAG = "sdm_led";
+
+void app_main(void)
+{
+    ESP_LOGI(TAG, "Install sigma delta channel");
+    sdm_channel_handle_t sdm_chan = NULL;
+    sdm_config_t config = {
+        .clk_src = SDM_CLK_SRC_DEFAULT,
+        .gpio_num = EXAMPLE_SIGMA_DELTA_GPIO_NUM,
+        .sample_rate_hz = 1 1000 * 1000, // 1MHz sample rate
+    };
+    ESP_ERROR_CHECK(sdm_new_channel(&config, &sdm_chan));
+
+    ESP_LOGI(TAG, "Enable sigma delta channel");
+    ESP_ERROR_CHECK(sdm_channel_enable(sdm_chan));
+
+    ESP_LOGI(TAG, "Change duty cycle continuously");
+    int8_t duty = 0;
+    int step = EXAMPLE_LED_DIM_DUTY_STEP;
+    while (1) {
+        ESP_ERROR_CHECK(sdm_channel_set_pulse_density(sdm_chan, duty));
+        /* By changing delay time, you can change the blink frequency of LED /
+        vTaskDelay(pdMS_TO_TICKS(EXAMPLE_LED_DIM_DELAY_MS));
+
+        duty += step;
+        if (duty == EXAMPLE_LED_DIM_DUTY_MAX || duty == EXAMPLE_LED_DIM_DUTY_MIN) {
+            step= -1;
+        }
+    }
+}
+
+```
+ 
+## สรุปผลการทดลอง
+
+- การทดลอง Sigma Delta Modulation LED Example บน ESP32 เป็นการทดลองเพื่อทดสอบการใช้เทคนิค Sigma-Delta modulation ในการควบคุมความสว่างของ LED ค่าความสว่างของ LED อาจมีการกระพริบถี่ ๆ ซึ่งขึ้นอยู่กับความถี่ของสัญญาณ modulation ที่ตั้งค่าไว้
